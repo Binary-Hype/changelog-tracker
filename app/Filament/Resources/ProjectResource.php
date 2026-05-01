@@ -2,48 +2,58 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ProjectResource\Pages;
+use App\Filament\Resources\ProjectResource\Pages\CreateProject;
+use App\Filament\Resources\ProjectResource\Pages\EditProject;
+use App\Filament\Resources\ProjectResource\Pages\ListProjects;
 use App\Models\Project;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-folder';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-folder';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('owner')
-                    ->required()
-                    ->disabled()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('repo')
+                TextInput::make('owner')
                     ->required()
                     ->disabled()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('description')
+                TextInput::make('repo')
+                    ->required()
+                    ->disabled()
+                    ->maxLength(255),
+                Textarea::make('description')
                     ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_active')
+                Toggle::make('is_active')
                     ->default(true),
-                Forms\Components\TextInput::make('check_interval_minutes')
+                TextInput::make('check_interval_minutes')
                     ->required()
                     ->numeric()
                     ->default(30)
                     ->minValue(5)
                     ->suffix('minutes'),
-                Forms\Components\Toggle::make('include_prereleases')
+                Toggle::make('include_prereleases')
                     ->default(false),
-                Forms\Components\CheckboxList::make('slackChannels')
+                CheckboxList::make('slackChannels')
                     ->relationship('slackChannels', 'name')
                     ->columnSpanFull(),
             ]);
@@ -53,35 +63,35 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('owner')
+                TextColumn::make('owner')
                     ->description(fn (Project $record): string => $record->repo)
                     ->searchable(),
-                Tables\Columns\ToggleColumn::make('is_active'),
-                Tables\Columns\TextColumn::make('last_checked_at')
+                ToggleColumn::make('is_active'),
+                TextColumn::make('last_checked_at')
                     ->since()
                     ->sortable()
                     ->placeholder('Never'),
-                Tables\Columns\TextColumn::make('releases_count')
+                TextColumn::make('releases_count')
                     ->counts('releases')
                     ->label('Releases')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('slack_channels_count')
+                TextColumn::make('slack_channels_count')
                     ->counts('slackChannels')
                     ->label('Channels')
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active'),
+                TernaryFilter::make('is_active'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -96,9 +106,9 @@ class ProjectResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProjects::route('/'),
-            'create' => Pages\CreateProject::route('/create'),
-            'edit' => Pages\EditProject::route('/{record}/edit'),
+            'index' => ListProjects::route('/'),
+            'create' => CreateProject::route('/create'),
+            'edit' => EditProject::route('/{record}/edit'),
         ];
     }
 }

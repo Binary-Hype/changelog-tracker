@@ -7,6 +7,7 @@ use App\Models\Release;
 use App\Services\GitHubService;
 use App\Services\SlackNotifier;
 use Illuminate\Console\Command;
+use Throwable;
 
 class CheckReleasesCommand extends Command
 {
@@ -33,7 +34,7 @@ class CheckReleasesCommand extends Command
         foreach ($projects as $project) {
             try {
                 $this->checkProject($project, $github, $slackNotifier);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->error("Error checking {$project->owner}/{$project->repo}: {$e->getMessage()}");
             }
         }

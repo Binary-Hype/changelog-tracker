@@ -2,57 +2,62 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ReleaseResource\Pages;
+use App\Filament\Resources\ReleaseResource\Pages\ListReleases;
+use App\Filament\Resources\ReleaseResource\Pages\ViewRelease;
 use App\Models\Release;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use App\Services\SlackNotifier;
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class ReleaseResource extends Resource
 {
     protected static ?string $model = Release::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
     public static function canCreate(): bool
     {
         return false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([]);
+        return $schema->components([]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Release Details')
+        return $schema
+            ->components([
+                Section::make('Release Details')
                     ->schema([
-                        Infolists\Components\TextEntry::make('project.name')
+                        TextEntry::make('project.name')
                             ->label('Project'),
-                        Infolists\Components\TextEntry::make('tag_name')
+                        TextEntry::make('tag_name')
                             ->label('Tag'),
-                        Infolists\Components\TextEntry::make('name')
+                        TextEntry::make('name')
                             ->label('Release Name'),
-                        Infolists\Components\TextEntry::make('published_at')
+                        TextEntry::make('published_at')
                             ->dateTime(),
-                        Infolists\Components\TextEntry::make('html_url')
+                        TextEntry::make('html_url')
                             ->label('GitHub URL')
                             ->url(fn (Release $record): string => $record->html_url)
                             ->openUrlInNewTab(),
-                        Infolists\Components\TextEntry::make('notified_at')
+                        TextEntry::make('notified_at')
                             ->dateTime()
                             ->placeholder('Not notified'),
                     ])
                     ->columns(2),
-                Infolists\Components\Section::make('Changelog')
+                Section::make('Changelog')
                     ->schema([
-                        Infolists\Components\TextEntry::make('body')
+                        TextEntry::make('body')
                             ->markdown()
                             ->columnSpanFull(),
                     ]),
@@ -64,17 +69,17 @@ class ReleaseResource extends Resource
         return $table
             ->defaultSort('published_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('project.name')
+                TextColumn::make('project.name')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tag_name')
+                TextColumn::make('tag_name')
                     ->label('Tag')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('published_at')
+                TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('notification_status')
+                TextColumn::make('notification_status')
                     ->label('Status')
                     ->badge()
                     ->getStateUsing(function (Release $record): string {
@@ -94,9 +99,9 @@ class ReleaseResource extends Resource
                     }),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('project')
+                SelectFilter::make('project')
                     ->relationship('project', 'name'),
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         'notified' => 'Notified',
                         'failed' => 'Failed',
@@ -111,9 +116,9 @@ class ReleaseResource extends Resource
                         };
                     }),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('renotify')
+            ->recordActions([
+                ViewAction::make(),
+                Action::make('renotify')
                     ->label('Re-notify')
                     ->icon('heroicon-o-bell')
                     ->requiresConfirmation()
@@ -123,7 +128,7 @@ class ReleaseResource extends Resource
                             'notification_attempts' => 0,
                         ]);
 
-                        $slackNotifier = app(\App\Services\SlackNotifier::class);
+                        $slackNotifier = app(SlackNotifier::class);
 
                         foreach ($record->project->slackChannels->where('is_active', true) as $channel) {
                             $success = $slackNotifier->notify($record, $channel);
@@ -134,7 +139,7 @@ class ReleaseResource extends Resource
                         }
                     }),
             ])
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 
     public static function getRelations(): array
@@ -145,8 +150,8 @@ class ReleaseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReleases::route('/'),
-            'view' => Pages\ViewRelease::route('/{record}'),
+            'index' => ListReleases::route('/'),
+            'view' => ViewRelease::route('/{record}'),
         ];
     }
 }

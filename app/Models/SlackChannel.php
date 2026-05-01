@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\SlackChannelFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class SlackChannel extends Model
 {
-    /** @use HasFactory<\Database\Factories\SlackChannelFactory> */
+    /** @use HasFactory<SlackChannelFactory> */
     use HasFactory;
 
     protected $fillable = [

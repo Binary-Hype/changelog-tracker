@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Release;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
@@ -23,15 +23,15 @@ class LatestReleases extends BaseWidget
                     ->limit(10)
             )
             ->columns([
-                Tables\Columns\TextColumn::make('project.name')
+                TextColumn::make('project.name')
                     ->label('Project')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tag_name')
+                TextColumn::make('tag_name')
                     ->label('Tag'),
-                Tables\Columns\TextColumn::make('published_at')
+                TextColumn::make('published_at')
                     ->since()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('notification_status')
+                TextColumn::make('notification_status')
                     ->label('Status')
                     ->badge()
                     ->getStateUsing(function (Release $record): string {

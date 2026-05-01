@@ -5,7 +5,8 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource;
 use App\Services\GitHubService;
 use App\Services\SlackNotifier;
-use Filament\Actions;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
@@ -16,7 +17,7 @@ class EditProject extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('checkNow')
+            Action::make('checkNow')
                 ->label('Check Now')
                 ->icon('heroicon-o-arrow-path')
                 ->action(function (): void {
@@ -67,7 +68,7 @@ class EditProject extends EditRecord
                         ->success()
                         ->send();
                 }),
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

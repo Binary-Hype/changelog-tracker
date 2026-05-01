@@ -4,7 +4,8 @@ namespace App\Filament\Resources\SlackChannelResource\Pages;
 
 use App\Filament\Resources\SlackChannelResource;
 use App\Services\SlackNotifier;
-use Filament\Actions;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
@@ -15,7 +16,7 @@ class EditSlackChannel extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('testMessage')
+            Action::make('testMessage')
                 ->label('Send Test Message')
                 ->icon('heroicon-o-paper-airplane')
                 ->action(function (): void {
@@ -34,7 +35,7 @@ class EditSlackChannel extends EditRecord
                             ->send();
                     }
                 }),
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

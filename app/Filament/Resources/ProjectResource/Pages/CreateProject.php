@@ -4,19 +4,19 @@ namespace App\Filament\Resources\ProjectResource\Pages;
 
 use App\Filament\Resources\ProjectResource;
 use App\Services\GitHubService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Schemas\Schema;
 
 class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('github_url')
+        return $schema
+            ->components([
+                TextInput::make('github_url')
                     ->label('GitHub URL')
                     ->placeholder('https://github.com/owner/repo or owner/repo')
                     ->required()

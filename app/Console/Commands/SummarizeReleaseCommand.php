@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Contracts\ChangelogSummarizerContract;
 use App\Models\Release;
 use Illuminate\Console\Command;
+use Throwable;
 
 class SummarizeReleaseCommand extends Command
 {
@@ -34,7 +35,7 @@ class SummarizeReleaseCommand extends Command
 
         try {
             $summary = $summarizer->summarize($body);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->error("Summarization failed: {$e->getMessage()}");
 
             return self::FAILURE;

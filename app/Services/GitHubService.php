@@ -5,6 +5,8 @@ namespace App\Services;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use RuntimeException;
 
 class GitHubService
 {
@@ -27,7 +29,7 @@ class GitHubService
             return ['owner' => $matches[1], 'repo' => rtrim($matches[2], '/')];
         }
 
-        throw new \InvalidArgumentException("Unable to parse GitHub URL: {$url}");
+        throw new InvalidArgumentException("Unable to parse GitHub URL: {$url}");
     }
 
     /**
@@ -47,7 +49,7 @@ class GitHubService
                 'status' => $response->status(),
             ]);
 
-            throw new \RuntimeException("Failed to fetch repository metadata for {$owner}/{$repo}");
+            throw new RuntimeException("Failed to fetch repository metadata for {$owner}/{$repo}");
         }
 
         $data = $response->json();
