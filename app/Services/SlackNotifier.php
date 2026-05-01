@@ -2,17 +2,20 @@
 
 namespace App\Services;
 
+use App\Contracts\ChangelogSummarizerContract;
 use App\Models\Release;
 use App\Models\SlackChannel;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SlackNotifier
 {
     private const MAX_BODY_LENGTH = 3000;
 
     public function __construct(
-        private MarkdownToSlackConverter $markdownConverter
+        private MarkdownToSlackConverter $markdownConverter,
+        private ChangelogSummarizerContract $summarizer,
     ) {}
 
     public function notify(Release $release, SlackChannel $channel): bool
@@ -20,7 +23,7 @@ class SlackNotifier
         $release->loadMissing('project');
         $project = $release->project;
 
-        $body = $this->markdownConverter->convert($release->body ?? '');
+        $body = $this->markdownConverter->convert($this->resolveBody($release));
         if (mb_strlen($body) > self::MAX_BODY_LENGTH) {
             $body = mb_substr($body, 0, self::MAX_BODY_LENGTH - 3).'...';
         }
@@ -30,7 +33,7 @@ class SlackNotifier
                 'type' => 'header',
                 'text' => [
                     'type' => 'plain_text',
-                    'text' => "{$project->name} {$release->tag_name}",
+                    'text' => "{$project->name} | {$release->tag_name}",
                     'emoji' => true,
                 ],
             ],
@@ -119,5 +122,45 @@ class SlackNotifier
         $response = Http::post($channel->webhook_url, $payload);
 
         return $response->successful();
+    }
+
+    private function resolveBody(Release $release): string
+    {
+        if (filled($release->summary)) {
+            return $release->summary;
+        }
+
+        $body = $release->body ?? '';
+
+        if (trim($body) === '') {
+            return '';
+        }
+
+        $maxInputChars = (int) config('ai.summarizer.max_input_chars', 40000);
+        $input = $body;
+
+        if (mb_strlen($input) > $maxInputChars) {
+            Log::info('Changelog body truncated for summarization', [
+                'release_id' => $release->id,
+                'original_length' => mb_strlen($input),
+                'truncated_to' => $maxInputChars,
+            ]);
+            $input = mb_substr($input, 0, $maxInputChars);
+        }
+
+        try {
+            $summary = $this->summarizer->summarize($input);
+            $release->forceFill(['summary' => $summary])->save();
+
+            return $summary;
+        } catch (Throwable $e) {
+            Log::warning('Changelog summarization failed', [
+                'release_id' => $release->id,
+                'tag' => $release->tag_name,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return $body;
+        }
     }
 }

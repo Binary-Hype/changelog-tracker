@@ -1,5 +1,9 @@
 <?php
 
+use App\Contracts\ChangelogSummarizerContract;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,8 +15,20 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->beforeEach(function () {
+        $this->app->instance(
+            ChangelogSummarizerContract::class,
+            new class implements ChangelogSummarizerContract
+            {
+                public function summarize(string $body): string
+                {
+                    return $body;
+                }
+            },
+        );
+    })
     ->in('Feature');
 
 /*

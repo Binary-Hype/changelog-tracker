@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Project;
+use App\Models\Release;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Release>
+ * @extends Factory<Release>
  */
 class ReleaseFactory extends Factory
 {
@@ -21,6 +22,7 @@ class ReleaseFactory extends Factory
             'tag_name' => 'v'.fake()->semver(),
             'name' => 'Release '.fake()->semver(),
             'body' => fake()->paragraphs(3, true),
+            'summary' => null,
             'html_url' => fake()->url(),
             'published_at' => fake()->dateTimeBetween('-1 month', 'now'),
             'notified_at' => null,

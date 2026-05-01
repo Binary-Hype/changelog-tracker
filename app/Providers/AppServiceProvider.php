@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Ai\Agents\ChangelogSummarizer;
+use App\Contracts\ChangelogSummarizerContract;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(ChangelogSummarizerContract::class, ChangelogSummarizer::class);
     }
 
     /**

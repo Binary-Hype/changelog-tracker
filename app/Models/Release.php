@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ReleaseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Release extends Model
 {
-    /** @use HasFactory<\Database\Factories\ReleaseFactory> */
+    /** @use HasFactory<ReleaseFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -17,6 +18,7 @@ class Release extends Model
         'tag_name',
         'name',
         'body',
+        'summary',
         'html_url',
         'published_at',
         'notified_at',
